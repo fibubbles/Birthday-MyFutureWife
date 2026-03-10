@@ -181,7 +181,7 @@ export default function Home() {
 
   // 3. LOCK SCREEN TIMER LOGIC (TARGET: 10 MAC 2026)
   useEffect(() => {
-    const targetDate = new Date("2026-03-10T00:00:00").getTime();
+    const targetDate = new Date("2026-03-11T00:00:00").getTime();
 
     const checkLock = () => {
       if (new Date().getTime() >= targetDate) {
