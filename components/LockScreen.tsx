@@ -4,7 +4,7 @@ import Countdown from "./Countdown";
 
 export default function LockScreen({ children }: { children: React.ReactNode }) {
     const [isLocked, setIsLocked] = useState(true);
-    const targetDate = new Date("2026-03-11T00:00:00").getTime();
+    const targetDate = new Date("2026-03-10T00:00:00").getTime();
 
     useEffect(() => {
         const checkTime = () => {
