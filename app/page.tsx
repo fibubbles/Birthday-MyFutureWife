@@ -56,7 +56,7 @@ function EndingSection() {
             <br /><br />
             Selagi kita masih bersama hari ini, baby akan tetap jaga hati sayang dan cuba jadi yang terbaik untuk sayang.
             <br /><br />
-            Ingat laa lelaki kacip yang awak katakan ni laa yang ada dengan awak dari awak belajar sampai awak dah dapat kerja tetap.
+            Happy Birthday Sayang, semoga panjang umur dimurahkan rezeki dan dipermudahkan segala urusan jadi anak yang solehah taat kepada ibu, jadi akak yang baik kepada adik-adik sayang dan jadi bakal isteri dan ibu yang baik kepada anak-anak suatu hari nanti aamiin.
             <br /><br />
             <span className="font-bold text-2xl text-pink-500">
               Next Milestone: Our Wedding? 💍
@@ -113,8 +113,46 @@ export default function Home() {
   const [showMainContent, setShowMainContent] = useState(false);
   const [isRejected, setIsRejected] = useState(false);
 
-  // 1. ANTI-CHEAT INITIAL CHECK
+  // 1. REMOTE RESET & ANTI-CHEAT LOGIC
   useEffect(() => {
+    // Fungsi untuk check reset dari Supabase
+    const checkResetStatus = async () => {
+      try {
+        const { data } = await supabase
+          .from("system_config")
+          .select("is_reset")
+          .eq("id", 1) // Pastikan Hafiz ada row ID 1 kat table ni
+          .single();
+
+        if (data?.is_reset === true) {
+          localStorage.clear();
+          // Set balik is_reset ke false supaya tak loop refresh
+          await supabase
+            .from("system_config")
+            .update({ is_reset: false })
+            .eq("id", 1);
+
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error("Error checking reset:", error);
+      }
+    };
+
+    // Check status setiap 5 saat
+    const interval = setInterval(checkResetStatus, 5000);
+
+    // LOGIK ANTI-CHEAT ASAL
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldReset = urlParams.get('reset');
+
+    if (shouldReset === 'true') {
+      localStorage.removeItem("proposal_answered");
+      localStorage.removeItem("proposal_result");
+      window.location.href = window.location.pathname;
+      return;
+    }
+
     const hasAnswered = localStorage.getItem("proposal_answered");
     const lastResult = localStorage.getItem("proposal_result");
 
@@ -125,6 +163,8 @@ export default function Home() {
         setIsRejected(true);
       }
     }
+
+    return () => clearInterval(interval);
   }, []);
 
   // 2. FETCH PHOTOS
@@ -139,9 +179,9 @@ export default function Home() {
     getPhotos();
   }, []);
 
-  // 3. LOCK SCREEN TIMER LOGIC (11 MAC 2026)
+  // 3. LOCK SCREEN TIMER LOGIC (TARGET: 10 MAC 2026)
   useEffect(() => {
-    const targetDate = new Date("2026-03-11T00:00:00").getTime();
+    const targetDate = new Date("2026-03-10T00:00:00").getTime();
 
     const checkLock = () => {
       if (new Date().getTime() >= targetDate) {
@@ -160,7 +200,6 @@ export default function Home() {
 
   // 4. SUBMIT ANSWER TO SUPABASE
   const submitAnswer = async (jawapan: string) => {
-    // Simpan ke database
     await supabase
       .from("proposals")
       .insert([{
@@ -168,7 +207,6 @@ export default function Home() {
         device_id: window.navigator.userAgent
       }]);
 
-    // Simpan ke LocalStorage (Anti-Cheat)
     localStorage.setItem("proposal_answered", "true");
     localStorage.setItem("proposal_result", jawapan);
 
